@@ -10,7 +10,12 @@ const LoggedOutNav = () => {
   return (
     <Stack.Navigator
       initialRouteName="Welcome"
-      screenOptions={{ presentation: "card" }}
+      screenOptions={{
+        contentStyle: { flex: 1 },
+        headerTransparent: true,
+        headerTitle: () => false,
+        headerTintColor: "white",
+      }}
     >
       <Stack.Screen
         name="Welcome"
