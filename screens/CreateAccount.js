@@ -3,23 +3,66 @@ import AuthButton from "../components/auth/AuthButton";
 import AuthLayout from "../components/auth/AuthLayout";
 import { TextInput } from "../components/auth/AuthShared";
 import { Controller, useForm } from "react-hook-form";
+import { gql, useMutation } from "@apollo/client";
 
-const CreateAccount = () => {
-  const { control, handleSubmit } = useForm();
+const Create_Account_Mutation = gql`
+  mutation createAccount(
+    $firstName: String!
+    $lastName: String!
+    $username: String!
+    $email: String!
+    $password: String!
+  ) {
+    createAccount(
+      firstName: $firstName
+      lastName: $lastName
+      username: $username
+      email: $email
+      password: $password
+    ) {
+      ok
+      error
+    }
+  }
+`;
+
+const CreateAccount = ({ navigation }) => {
+  const { control, handleSubmit, getValues } = useForm();
   const lastNameRef = useRef();
   const UsermameRef = useRef();
   const EmailRef = useRef();
   const PasswordRef = useRef();
+  const onCompleted = (data) => {
+    const {
+      createAccount: { ok },
+    } = data;
+    const { username, password } = getValues();
+    if (ok) {
+      navigation.navigate("Login", {
+        username,
+        password,
+      });
+    }
+  };
+  const [createAccount, { loading }] = useMutation(Create_Account_Mutation, {
+    onCompleted,
+  });
   const onNext = (nextOne) => {
     nextOne?.current?.focus();
   };
-  const onValid = (form) => {
-    console.log(form);
+  const onValid = (data) => {
+    if (!loading) {
+      createAccount({
+        variables: {
+          ...data,
+        },
+      });
+    }
   };
   return (
     <AuthLayout>
       <Controller
-        name="firstname"
+        name="firstName"
         control={control}
         rules={{ required: true }}
         render={({ field: { onChange, onBlur, value } }) => (
@@ -35,7 +78,7 @@ const CreateAccount = () => {
         )}
       />
       <Controller
-        name="lastname"
+        name="lastName"
         control={control}
         rules={{ required: true }}
         render={({ field: { onChange, onBlur, value } }) => (
@@ -108,8 +151,8 @@ const CreateAccount = () => {
       />
       <AuthButton
         text="Create Account"
-        disabled={false}
         onPress={handleSubmit(onValid)}
+        loading={false}
       />
     </AuthLayout>
   );

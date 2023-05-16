@@ -1,17 +1,51 @@
-import React, { useEffect, useRef } from "react";
+import { gql, useMutation } from "@apollo/client";
+import React, { useRef } from "react";
 import { Controller, useForm } from "react-hook-form";
+import { LogUserIn } from "../apollo";
 import AuthButton from "../components/auth/AuthButton";
 import AuthLayout from "../components/auth/AuthLayout";
 import { TextInput } from "../components/auth/AuthShared";
 
-const Login = () => {
-  const { control, handleSubmit } = useForm();
+const Log_In_Mutation = gql`
+  mutation login($username: String!, $password: String!) {
+    login(username: $username, password: $password) {
+      ok
+      token
+      error
+    }
+  }
+`;
+
+const Login = ({ route: { params } }) => {
+  const { control, handleSubmit, formState } = useForm({
+    defaultValues: {
+      password: params?.password,
+      username: params?.username,
+    },
+  });
   const PasswordRef = useRef();
+  const onCompleted = async (data) => {
+    const {
+      login: { ok, token },
+    } = data;
+    if (ok) {
+      await LogUserIn(token);
+    }
+  };
+  const [login, { loading }] = useMutation(Log_In_Mutation, {
+    onCompleted,
+  });
   const onNext = (nextOne) => {
     nextOne?.current?.focus();
   };
-  const onValid = (form) => {
-    console.log(form);
+  const onValid = (data) => {
+    if (!loading) {
+      login({
+        variables: {
+          ...data,
+        },
+      });
+    }
   };
   return (
     <AuthLayout>
@@ -53,7 +87,8 @@ const Login = () => {
       />
       <AuthButton
         text="Log In"
-        disabled={false}
+        loading={loading}
+        disabled={!formState.isValid}
         onPress={handleSubmit(onValid)}
       />
     </AuthLayout>
