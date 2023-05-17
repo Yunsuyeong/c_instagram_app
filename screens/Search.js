@@ -1,7 +1,7 @@
 import React from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 
-const Feed = ({ navigation }) => {
+const Search = ({ navigation }) => {
   return (
     <View
       style={{
@@ -18,4 +18,4 @@ const Feed = ({ navigation }) => {
   );
 };
 
-export default Feed;
+export default Search;
