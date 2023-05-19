@@ -1,5 +1,6 @@
 import React from "react";
 import { Text, TouchableOpacity, View } from "react-native";
+import { LogUserOut } from "../apollo";
 
 const Search = ({ navigation }) => {
   return (
@@ -11,7 +12,7 @@ const Search = ({ navigation }) => {
         alignItems: "center",
       }}
     >
-      <TouchableOpacity onPress={() => navigation.navigate("Photo")}>
+      <TouchableOpacity onPress={() => LogUserOut()}>
         <Text style={{ color: "white" }}>Photo</Text>
       </TouchableOpacity>
     </View>
