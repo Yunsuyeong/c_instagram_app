@@ -6,22 +6,32 @@ import {
 } from "@apollo/client";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { setContext } from "@apollo/client/link/context";
-
-export const isLoggedInVar = makeVar(true);
-export const tokenVar = makeVar("");
+import { offsetLimitPagination } from "@apollo/client/utilities";
 
 const TOKEN = "token";
+const LOGGED_IN = "loggedIn";
+
+export const isLoggedInVar = makeVar(false);
+export const tokenVar = makeVar("");
 
 export const LogUserIn = async (token) => {
-  await AsyncStorage.setItem(TOKEN, token);
+  try {
+    await AsyncStorage.multiSet([
+      [TOKEN, "token"],
+      [LOGGED_IN, "true"],
+    ]);
+  } catch (err) {
+    console.error(err);
+  }
+
   isLoggedInVar(true);
   tokenVar(token);
 };
 
 export const LogUserOut = async () => {
-  await AsyncStorage.removeItem(TOKEN);
+  await AsyncStorage.multiRemove([TOKEN, LOGGED_IN]);
+  tokenVar("");
   isLoggedInVar(false);
-  tokenVar(null);
 };
 
 const httpLink = createHttpLink({
@@ -29,18 +39,26 @@ const httpLink = createHttpLink({
 });
 
 const authLink = setContext((_, { headers }) => {
-  const token = AsyncStorage.getItem(TOKEN);
   return {
     headers: {
       ...headers,
-      authorization: token ? `Bearer ${token}` : "",
+      token: tokenVar(),
     },
   };
 });
 
-const client = new ApolloClient({
-  uri: authLink.concat(httpLink),
-  cache: new InMemoryCache(),
+export const cache = new InMemoryCache({
+  typePolicies: {
+    Query: {
+      fields: {
+        seeFeed: offsetLimitPagination(),
+      },
+    },
+  },
 });
 
+const client = new ApolloClient({
+  link: authLink.concat(httpLink),
+  cache,
+});
 export default client;

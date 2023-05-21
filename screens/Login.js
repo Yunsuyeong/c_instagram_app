@@ -1,7 +1,7 @@
 import { gql, useMutation } from "@apollo/client";
 import React, { useRef } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { LogUserIn } from "../apollo";
+import { LogUserIn, isLoggedInVar } from "../apollo";
 import AuthButton from "../components/auth/AuthButton";
 import AuthLayout from "../components/auth/AuthLayout";
 import { TextInput } from "../components/auth/AuthShared";
@@ -17,30 +17,31 @@ const Log_In_Mutation = gql`
 `;
 
 const Login = ({ route: { params } }) => {
-  const { control, handleSubmit, formState } = useForm({
+  const { control, handleSubmit, formState, setError } = useForm({
+    mode: "onChange",
     defaultValues: {
       password: params?.password,
       username: params?.username,
     },
   });
   const PasswordRef = useRef();
-  const onCompleted = async (data) => {
-    const {
-      login: { ok, token },
-    } = data;
-    if (ok) {
-      await LogUserIn(token);
-    }
-  };
-  const [login, { loading }] = useMutation(Log_In_Mutation, {
-    onCompleted,
+  const [loginMutation, { loading }] = useMutation(Log_In_Mutation, {
+    onCompleted: async (data) => {
+      const {
+        login: { ok, token },
+      } = data;
+      if (ok) {
+        console.log(token);
+        await LogUserIn(token);
+      }
+    },
   });
   const onNext = (nextOne) => {
     nextOne?.current?.focus();
   };
   const onValid = (data) => {
     if (!loading) {
-      login({
+      loginMutation({
         variables: {
           ...data,
         },

@@ -33,6 +33,7 @@ const CreateAccount = ({ navigation }) => {
   const EmailRef = useRef();
   const PasswordRef = useRef();
   const onCompleted = (data) => {
+    if (!data.createAccount) return;
     const {
       createAccount: { ok },
     } = data;
