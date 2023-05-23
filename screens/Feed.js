@@ -1,6 +1,6 @@
 import { gql, useQuery } from "@apollo/client";
 import React, { useState } from "react";
-import { ActivityIndicator, FlatList, Text, View } from "react-native";
+import { FlatList } from "react-native";
 import Photo from "../components/Photo";
 import ScreenLayout from "../components/ScreenLayout";
 import { Comment_Fragment, Photo_Fragment } from "../fragments";
@@ -32,7 +32,6 @@ const Feed = () => {
       offset: 0,
     },
   });
-  console.log(data);
   const renderPhoto = ({ item: photo }) => {
     return <Photo {...photo} />;
   };

@@ -32,12 +32,11 @@ export default function App() {
       });
       if (token) {
         isLoggedInVar(true);
-        tokenVar(token);
+        tokenVar(token.replace(/"/g, ""));
       }
       try {
         await SplashScreen.preventAutoHideAsync();
         preloadAssets();
-        await cachePersistor.restore();
       } catch (err) {
         console.error(err);
       } finally {

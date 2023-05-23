@@ -9,29 +9,20 @@ import { setContext } from "@apollo/client/link/context";
 import { offsetLimitPagination } from "@apollo/client/utilities";
 
 const TOKEN = "token";
-const LOGGED_IN = "loggedIn";
 
 export const isLoggedInVar = makeVar(false);
 export const tokenVar = makeVar("");
 
 export const LogUserIn = async (token) => {
-  try {
-    await AsyncStorage.multiSet([
-      [TOKEN, "token"],
-      [LOGGED_IN, "true"],
-    ]);
-  } catch (err) {
-    console.error(err);
-  }
-
+  await AsyncStorage.setItem(TOKEN, token);
   isLoggedInVar(true);
   tokenVar(token);
 };
 
 export const LogUserOut = async () => {
-  await AsyncStorage.multiRemove([TOKEN, LOGGED_IN]);
-  tokenVar("");
+  await AsyncStorage.removeItem(TOKEN);
   isLoggedInVar(false);
+  tokenVar(null);
 };
 
 const httpLink = createHttpLink({

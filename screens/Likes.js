@@ -14,7 +14,7 @@ const Likes_Query = gql`
   ${User_Fragment}
 `;
 
-const Likes = ({ route, navigation }) => {
+const Likes = ({ route }) => {
   const [refreshing, setRefreshing] = useState(false);
   const { data, loading, refetch } = useQuery(Likes_Query, {
     variables: {

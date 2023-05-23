@@ -1,7 +1,14 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Text, View } from "react-native";
+import useMe from "../hooks/useMe";
 
-const Me = () => {
+export default function Me({ navigation }) {
+  const { data } = useMe();
+  useEffect(() => {
+    navigation.setOptions({
+      title: data?.me?.username,
+    });
+  }, []);
   return (
     <View
       style={{
@@ -11,9 +18,7 @@ const Me = () => {
         alignItems: "center",
       }}
     >
-      <Text style={{ color: "white" }}>Me</Text>
+      <Text style={{ color: "white" }}>{data?.me?.username}'s Profile</Text>
     </View>
   );
-};
-
-export default Me;
+}
