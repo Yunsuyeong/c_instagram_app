@@ -100,7 +100,7 @@ const Photo = ({ id, user, caption, file, isLiked, likes }) => {
       });
     }
   };
-  const [toggleLike, { loading }] = useMutation(Toggle_Like_Mutation, {
+  const [toggleLike] = useMutation(Toggle_Like_Mutation, {
     variables: {
       id,
     },
@@ -122,7 +122,7 @@ const Photo = ({ id, user, caption, file, isLiked, likes }) => {
       />
       <ExtraContainer>
         <Actions>
-          <Action>
+          <Action onPress={toggleLike}>
             <Ionicons
               name={isLiked ? "heart" : "heart-outline"}
               color={isLiked ? "tomato" : "white"}
@@ -163,6 +163,6 @@ Photo.propTypes = {
   file: PropTypes.string.isRequired,
   isLiked: PropTypes.bool.isRequired,
   likes: PropTypes.number.isRequired,
-  commentNumber: PropTypes.number.isRequired,
+  commentNumber: PropTypes.number,
 };
 export default Photo;
