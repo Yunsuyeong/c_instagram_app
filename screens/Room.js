@@ -1,5 +1,5 @@
-import { gql, useMutation, useQuery } from "@apollo/client";
-import React, { useEffect } from "react";
+import { gql, useApolloClient, useMutation, useQuery } from "@apollo/client";
+import React, { useEffect, useState } from "react";
 import { FlatList, KeyboardAvoidingView, View } from "react-native";
 import ScreenLayout from "../components/ScreenLayout";
 import styled from "styled-components/native";
@@ -29,6 +29,20 @@ const Send_Message_Mutation = gql`
     sendMessage(payload: $payload, roomId: $roomId, userId: $userId) {
       ok
       id
+    }
+  }
+`;
+
+const Room_Updates = gql`
+  subscription roomUpdates($id: Int!) {
+    roomUpdates(id: $id) {
+      id
+      payload
+      user {
+        username
+        avatar
+      }
+      read
     }
   }
 `;
@@ -128,11 +142,62 @@ const Room = ({ route, navigation }) => {
       update: updateSendMessage,
     }
   );
-  const { data, loading } = useQuery(Room_Query, {
+  const { data, loading, subscribeToMore } = useQuery(Room_Query, {
     variables: {
       id: route?.params?.id,
     },
   });
+  const client = useApolloClient();
+  const updateQuery = (prevQuery, options) => {
+    const {
+      subscriptionData: {
+        data: { roomUpdates: message },
+      },
+    } = options;
+    if (message.id) {
+      const incomingMessage = client.cache.writeFragment({
+        fragment: gql`
+          fragment NewMessage on Message {
+            id
+            payload
+            user {
+              username
+              avatar
+            }
+            read
+          }
+        `,
+        data: message,
+      });
+      client.cache.modify({
+        id: `Room:${route.params.id}`,
+        fields: {
+          messages(prev) {
+            const existingMessage = prev.find(
+              (aMessage) => aMessage.__ref === incomingMessage.__ref
+            );
+            if (existingMessage) {
+              return prev;
+            }
+            return [...prev, incomingMessage];
+          },
+        },
+      });
+    }
+  };
+  const [subscribed, setSubscribed] = useState(false);
+  useEffect(() => {
+    if (data?.seeRoom && !subscribed) {
+      subscribeToMore({
+        document: Room_Updates,
+        variables: {
+          id: route?.params?.id,
+        },
+        updateQuery,
+      });
+      setSubscribed(true);
+    }
+  }, [data, subscribed]);
   const onValid = ({ message }) => {
     if (!sendingMessage) {
       sendMessages({
